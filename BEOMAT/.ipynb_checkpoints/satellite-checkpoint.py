@@ -63,6 +63,8 @@ class Satellite:
         earth_grav.SetField("Degree", 2)
         earth_grav.SetField("Order", 2)
 
+        # TO DO - ADD Drag perturbation
+
         fm.AddForce(earth_grav)
         self.propagator.SetReference(fm)
 
@@ -70,6 +72,8 @@ class Satellite:
     # Propagacion
     # ---------------------------
     def propagate(self, duration_sec=86400, step_sec=60):
+        Seguir por aca ... ... gmat.Initialize()
+           
         # Asociar spacecraft al propagador
         self.propagator.SetReference(self.sc)
     

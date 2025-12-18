@@ -6,3 +6,16 @@ GMAT no es una librería de Python que se instale con pip, sino un software inde
 Configuración de Rutas: Debes indicarle a Python dónde reside el motor de GMAT dentro de tu computadora.
 
 Carga del Motor: Se utiliza un módulo llamado gmatpy que viene dentro de la carpeta /bin de tu instalación de GMAT.
+
+Tipo en GMAT				Método Python			Ejemplo
+String (Nombres, Modos)			SetField(str, str)		SetField("BodyName", "Earth")
+Real (SMA, Altura, Masas)		SetReal(str, float)		SetReal("SMA", 7100.0)
+Integer (Grado, Orden, Iteraciones)	SetInteger(str, int)		SetInteger("Degree", 4)
+
+Otras dependencias
+plotly 
+astropy (para la transformacion de ECI a Geodesicas)
+-----------------------------------------------------------------------------------------
+Versión de Astropy: 5.2.2
+Versión de Python: 3.8.18 (default, Sep 11 2023, 13:39:12) [MSC v.1916 64 bit (AMD64)]
+-----------------------------------------------------------------------------------------
