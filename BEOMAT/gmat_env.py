@@ -53,7 +53,8 @@ def get_gmat():
 
     # --- CONFIGURACIÓN DE PATHS ---
     # Asegúrate de que esta ruta sea exacta en tu sistema
-    gmat_bin_path = r'C:\Users\mvalenti\Desktop\gmat-win-R2022a\GMAT\bin' 
+    #gmat_bin_path = r'C:\Users\mvalenti\Desktop\gmat-win-R2022a\GMAT\bin' 
+    gmat_bin_path = r'C:\Users\macec\Downloads\gmat-win-R2022a\GMAT\bin'
     
     if not os.path.exists(gmat_bin_path):
         raise FileNotFoundError(f"La ruta de GMAT no existe: {gmat_bin_path}")
