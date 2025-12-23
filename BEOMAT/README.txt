@@ -1,4 +1,5 @@
 Integrar GMAT (General Mission Analysis Tool) con Python para trabajar en un entorno como JupyterLab.
+[Ref] ../yourdir/GMAT/docs/GMAT_API_UsersGuide.pdf
 
 1. La Interfaz GMAT-Python (API)
 GMAT no es una librería de Python que se instale con pip, sino un software independiente que expone una API de Python. Para usarla en Jupyter:
