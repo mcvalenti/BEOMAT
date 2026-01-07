@@ -83,74 +83,78 @@ class Propagator:
         #     drag.SetReference(atmos)
         #     self.force_model.AddForce(drag)
 
-    def run(self, satellite, duration_sec, step_size=60):
-        gmat = get_gmat()
-        
-        # 1. En lugar de AddPropObject, usamos SetField en el ForceModel
-        # Esto le dice al modelo de fuerzas que el satélite es el cuerpo a mover
-        self.force_model.SetField("PointMasses", f"{{{satellite.name}}}") 
-        
-        # 2. Vincular al PropSetup
-        self.gmat_prop.AddPropObject(satellite.gmat_obj)
-        
-        # 3. Inicializar
-        gmat.Initialize()
-        
-        internal_prop = self.gmat_prop.GetPropagator()
-        data = []
-        
-        # Extraer estado inicial
-        pos_0 = [float(satellite.gmat_obj.GetField("X")), 
-                float(satellite.gmat_obj.GetField("Y")), 
-                float(satellite.gmat_obj.GetField("Z"))]
-        data.append([0.0] + pos_0)
-
-        # 4. Bucle de propagación
-        for i in range(1, int(duration_sec / step_size) + 1):
-            internal_prop.Step(float(step_size))
-            
-            # Sincronización manual: Leemos directamente del integrador
-            # Esto extrae el vector de estado (X, Y, Z, Vx, Vy, Vz)
-            state = internal_prop.GetState() 
-            
-            # Extraemos X, Y, Z (índices 0, 1, 2)
-            pos = [state[0], state[1], state[2]]
-            data.append([float(i * step_size)] + pos)
-            
-        return np.array(data)
-
     # def run(self, satellite, duration_sec, step_size=60):
     #     gmat = get_gmat()
-               
-    #     # 2. Vincular al PropSetup e Inicializar
+        
+    #     # 1. En lugar de AddPropObject, usamos SetField en el ForceModel
+    #     try:
+    #         self.force_model.AddPropObject(satellite.gmat_obj)
+    #     except:
+    #         # Si ya estaba añadido de una corrida anterior, GMAT podría dar error, 
+    #         # así que lo envolvemos en un try/except para que el flujo siga.
+    #         pass
+        
+    #     # 2. Vincular al PropSetup
     #     self.gmat_prop.AddPropObject(satellite.gmat_obj)
+        
+    #     # 3. Inicializar
     #     gmat.Initialize()
         
-    #     # 3. Obtener el integrador y el satélite
     #     internal_prop = self.gmat_prop.GetPropagator()
-    #     sat_obj = satellite.gmat_obj
-        
     #     data = []
-    #     current_time = 0.0
         
-    #     for _ in range(0, int(duration_sec), step_size):
-    #         # Propagar
+    #     # Extraer estado inicial
+    #     pos_0 = [float(satellite.gmat_obj.GetField("X")), 
+    #             float(satellite.gmat_obj.GetField("Y")), 
+    #             float(satellite.gmat_obj.GetField("Z"))]
+    #     data.append([0.0] + pos_0)
+
+    #     # 4. Bucle de propagación
+    #     for i in range(1, int(duration_sec / step_size) + 1):
     #         internal_prop.Step(float(step_size))
             
-    #         current_time += step_size
-    #         # SINCRONIZACIÓN MANUAL
-    #         # Si no hay UpdateObjects, forzamos a GMAT a refrescar el estado
-    #         # moviendo el puntero de tiempo del satélite
-    #         gmat.Update(sat_obj) 
+    #         # Sincronización manual: Leemos directamente del integrador
+    #         # Esto extrae el vector de estado (X, Y, Z, Vx, Vy, Vz)
+    #         state = internal_prop.GetState() 
             
-    #         # Extraer posición
-    #         pos = [
-    #             float(sat_obj.GetField("X")),
-    #             float(sat_obj.GetField("Y")),
-    #             float(sat_obj.GetField("Z"))
-    #         ]
-    #         data.append([current_time] + pos)
+    #         # Extraemos X, Y, Z (índices 0, 1, 2)
+    #         pos = [state[0], state[1], state[2]]
+    #         data.append([float(i * step_size)] + pos)
             
     #     return np.array(data)
+
+    def run(self, satellite, duration_sec, step_size=60):
+        gmat = get_gmat()
+               
+        # 2. Vincular al PropSetup e Inicializar
+        self.gmat_prop.AddPropObject(satellite.gmat_obj)
+        gmat.Initialize()
+        
+        # 3. Obtener el integrador y el satélite
+        internal_prop = self.gmat_prop.GetPropagator()
+        sat_obj = satellite.gmat_obj
+        
+        data = []
+        current_time = 0.0
+        
+        for _ in range(0, int(duration_sec), step_size):
+            # Propagar
+            internal_prop.Step(float(step_size))
+            
+            current_time += step_size
+            # SINCRONIZACIÓN MANUAL
+            # Si no hay UpdateObjects, forzamos a GMAT a refrescar el estado
+            # moviendo el puntero de tiempo del satélite
+            gmat.Update(sat_obj) 
+            
+            # Extraer posición
+            pos = [
+                float(sat_obj.GetField("X")),
+                float(sat_obj.GetField("Y")),
+                float(sat_obj.GetField("Z"))
+            ]
+            data.append([current_time] + pos)
+            
+        return np.array(data)
 
   
