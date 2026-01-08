@@ -19,9 +19,9 @@ astropy (para la transformacion de ECI a Geodesicas)
 -----------------------------------------------------------------------------------------
 Versión de Astropy: 5.2.2
 Versión de Python: 3.8.18 (default, Sep 11 2023, 13:39:12) [MSC v.1916 64 bit (AMD64)]
-Versión de Requests: 2.32.4 (Python HTTP for Humans.)
-Versión de Pandas: 2.0.3
 -----------------------------------------------------------------------------------------
+pip install ipython==8.12.3 ipykernel numpy astropy plotly nbformat
+pip install matplotlib pandas scipy
 
 Configuracion del Entorno.
 Vamos a dejarlo configurado de forma blindada siguiendo estos pasos:
@@ -37,3 +37,5 @@ Ese error es un clásico de Windows. Por seguridad, PowerShell viene configurado
 la ejecución de scripts (como el archivo Activate.ps1 de tu entorno virtual).
 
 Para solucionarlo y poder "entrar" a tu entorno virtual, tienes que cambiar la Política de Ejecución.
+
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
