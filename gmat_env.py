@@ -11,8 +11,8 @@ def get_gmat():
         return _GMAT_INSTANCE
 
     # --- PATHS CONFIGS ---
-    #gmat_bin_path = r'C:\Users\mvalenti\Desktop\gmat-win-R2022a\GMAT\bin' (AR machine)
-    gmat_bin_path = r'C:\Users\macec\Downloads\gmat-win-R2022a\GMAT\bin'
+    gmat_bin_path = r'C:\Users\mvalenti\Desktop\gmat-win-R2022a\GMAT\bin' #(AR machine)
+    #gmat_bin_path = r'C:\Users\macec\Downloads\gmat-win-R2022a\GMAT\bin'
     
     if not os.path.exists(gmat_bin_path):
         raise FileNotFoundError(f"GMAT path does not exist: {gmat_bin_path}")

@@ -41,119 +41,88 @@ class Propagator:
         gmat = get_gmat()
         self.name = name
         
-        # 1. Crear ForceModel
+        # ==============
+        #  ForceModel
+        # ==============
         self.force_model = gmat.Construct("ForceModel", f"FM_{name}")
-        # 2. Crear el integrador (ej: PrinceDormand78 o RungeKutta89)
-        self.integrator = gmat.Construct("PrinceDormand78", f"Int_{name}")
-        # 3. Crear el PropSetup 
+        self.earthgrav = gmat.Construct("GravityField")
+        self.earthgrav.SetField("PotentialFile","JGM2.cof")
+        self.earthgrav.SetField("BodyName","Earth")
+        self.earthgrav.Help()
+        self.force_model.AddForce(self.earthgrav)
+        # ==============
+        #  Propagator
+        # ==============
         self.gmat_prop = gmat.Construct("PropSetup", f"Prop_{name}")
-        # 4. Vincular todo
+        # ==============
+        #  Integrator
+        # ==============
+        self.integrator = gmat.Construct("PrinceDormand78", f"Int_{name}")
+        
+        # Assign the integrator and force model
         self.gmat_prop.SetReference(self.integrator)
         self.gmat_prop.SetReference(self.force_model)
         
-        # Configuracion por defecto si no se provee una
-        if config is None:
-            config = {'gravity': 'Earth', 'degree': 0, 'order': 0}
+    #     # Configuracion por defecto si no se provee una
+    #     if config is None:
+    #         config = {'gravity': 'Earth', 'degree': 0, 'order': 0}
         
-        self.config = config
-        self._setup_forces(config)
+    #     self.config = config
+    #     self._setup_forces(config)
 
-    def _setup_forces(self, config):
-        """Configura el modelo de fuerzas usando enteros nativos para Degree/Order."""
-        gmat = get_gmat()
-
-        if 'gravity' in config:
-            body = config['gravity']
-            if config.get('degree', 0) > 0:
-                grav = gmat.Construct("GravityField", f"Grav_{body}")
-                
-                grav.SetField("BodyName", body)
-                # El Test 1 demostró que esto debe ser int
-                grav.SetField("Degree", int(config['degree']))
-                grav.SetField("Order", int(config['order']))
-            else:
-                grav = gmat.Construct("PointMassForce", f"PM_{body}")
-                grav.SetField("BodyName", body)
-            
-            self.force_model.AddForce(grav)
-
-        # if config.get('drag', False):
-        #     atmos = gmat.Construct("ExponentialAtmosphere")
-        #     drag = gmat.Construct("DragForce", f"Drag_{self.name}")
-        #     drag.SetReference(atmos)
-        #     self.force_model.AddForce(drag)
-
-    # def run(self, satellite, duration_sec, step_size=60):
+    # def _setup_forces(self, config):
+    #     """Configura el modelo de fuerzas usando enteros nativos para Degree/Order."""
     #     gmat = get_gmat()
-        
-    #     # 1. En lugar de AddPropObject, usamos SetField en el ForceModel
-    #     try:
-    #         self.force_model.AddPropObject(satellite.gmat_obj)
-    #     except:
-    #         # Si ya estaba añadido de una corrida anterior, GMAT podría dar error, 
-    #         # así que lo envolvemos en un try/except para que el flujo siga.
-    #         pass
-        
-    #     # 2. Vincular al PropSetup
-    #     self.gmat_prop.AddPropObject(satellite.gmat_obj)
-        
-    #     # 3. Inicializar
-    #     gmat.Initialize()
-        
-    #     internal_prop = self.gmat_prop.GetPropagator()
-    #     data = []
-        
-    #     # Extraer estado inicial
-    #     pos_0 = [float(satellite.gmat_obj.GetField("X")), 
-    #             float(satellite.gmat_obj.GetField("Y")), 
-    #             float(satellite.gmat_obj.GetField("Z"))]
-    #     data.append([0.0] + pos_0)
 
-    #     # 4. Bucle de propagación
-    #     for i in range(1, int(duration_sec / step_size) + 1):
-    #         internal_prop.Step(float(step_size))
+    #     if 'gravity' in config:
+    #         body = config['gravity']
+    #         if config.get('degree', 0) > 0:
+    #             grav = gmat.Construct("GravityField", f"Grav_{body}")
+                
+    #             grav.SetField("BodyName", body)
+    #             # El Test 1 demostró que esto debe ser int
+    #             grav.SetField("Degree", int(config['degree']))
+    #             grav.SetField("Order", int(config['order']))
+    #         else:
+    #             grav = gmat.Construct("PointMassForce", f"PM_{body}")
+    #             grav.SetField("BodyName", body)
             
-    #         # Sincronización manual: Leemos directamente del integrador
-    #         # Esto extrae el vector de estado (X, Y, Z, Vx, Vy, Vz)
-    #         state = internal_prop.GetState() 
-            
-    #         # Extraemos X, Y, Z (índices 0, 1, 2)
-    #         pos = [state[0], state[1], state[2]]
-    #         data.append([float(i * step_size)] + pos)
-            
-    #     return np.array(data)
+    #         self.force_model.AddForce(grav)
 
     def run(self, satellite, duration_sec, step_size=60):
         gmat = get_gmat()
-               
-        # 2. Vincular al PropSetup e Inicializar
-        self.gmat_prop.AddPropObject(satellite.gmat_obj)
+        # Top level initialization
         gmat.Initialize()
+        sat_obj = satellite.gmat_obj       
+        # Spacecraft that is propagated
+        self.gmat_prop.AddPropObject(sat_obj)
+        self.gmat_prop.PrepareInternals()
         
-        # 3. Obtener el integrador y el satélite
+        # Refresh the integrator reference
         internal_prop = self.gmat_prop.GetPropagator()
-        sat_obj = satellite.gmat_obj
-        
+       
         data = []
         current_time = 0.0
         
         for _ in range(0, int(duration_sec), step_size):
             # Propagar
-            internal_prop.Step(float(step_size))
+            internal_prop.Step(float(step_size)) # take a step
+            
+            # Get Iterator state
+            state = internal_prop.GetState() # To force sat_obj Update
+            
+            # Force step iteration
+            sat_obj.SetField("X", state[0])
+            sat_obj.SetField("Y", state[1])
+            sat_obj.SetField("Z", state[2])
+            sat_obj.SetField("VX", state[3])
+            sat_obj.SetField("VY", state[4])
+            sat_obj.SetField("VZ", state[5])
+            
+            pos = [state[0], state[1], state[2]]
+            data.append([current_time] + pos)
             
             current_time += step_size
-            # SINCRONIZACIÓN MANUAL
-            # Si no hay UpdateObjects, forzamos a GMAT a refrescar el estado
-            # moviendo el puntero de tiempo del satélite
-            gmat.Update(sat_obj) 
-            
-            # Extraer posición
-            pos = [
-                float(sat_obj.GetField("X")),
-                float(sat_obj.GetField("Y")),
-                float(sat_obj.GetField("Z"))
-            ]
-            data.append([current_time] + pos)
             
         return np.array(data)
 

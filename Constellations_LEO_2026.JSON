@@ -1,0 +1,124 @@
+{
+  "leo_constellations_2026": [
+    {
+      "classification": "Broadband",
+      "name": "Starlink (V2/V3)",
+      "company": "SpaceX",
+      "country_of_origin": "USA",
+      "approx_satellites": 6800,
+      "altitude_km": 550,
+      "inclination_deg": "53, 43, 97",
+      "configuration": "72 planes x 22-50 sat",
+      "primary_launcher": "Falcon 9 / Starship",
+      "primary_purpose": "Massive low-latency internet"
+    },
+    {
+      "classification": "Broadband",
+      "name": "OneWeb",
+      "company": "Eutelsat OneWeb",
+      "country_of_origin": "UK / France",
+      "approx_satellites": 648,
+      "altitude_km": 1200,
+      "inclination_deg": 87.9,
+      "configuration": "12 planes x 49 sat",
+      "primary_launcher": "Falcon 9 / LVM3 (ISRO)",
+      "primary_purpose": "Government and enterprise connectivity"
+    },
+    {
+      "classification": "Broadband",
+      "name": "Project Kuiper",
+      "company": "Amazon",
+      "country_of_origin": "USA",
+      "approx_satellites": 500,
+      "altitude_km": 630,
+      "inclination_deg": "33, 42, 51.9",
+      "configuration": "98 planes (total)",
+      "primary_launcher": "Atlas V / Vulcan / New Glenn",
+      "primary_purpose": "Residential internet and AWS services"
+    },
+    {
+      "classification": "Broadband",
+      "name": "Lightspeed",
+      "company": "Telesat",
+      "country_of_origin": "Canada",
+      "approx_satellites": 198,
+      "altitude_km": 1325,
+      "inclination_deg": "99, 51",
+      "configuration": "6 Polar planes / 12 Inclined planes",
+      "primary_launcher": "Falcon 9",
+      "primary_purpose": "Secure corporate and defense network"
+    },
+    {
+      "classification": "Direct-to-Cell",
+      "name": "BlueBird",
+      "company": "AST SpaceMobile",
+      "country_of_origin": "USA",
+      "approx_satellites": 50,
+      "altitude_km": 530,
+      "inclination_deg": "0 - 55",
+      "configuration": "16 planes (target)",
+      "primary_launcher": "Falcon 9 / Blue Origin",
+      "primary_purpose": "Direct 4G/5G to standard mobile devices"
+    },
+    {
+      "classification": "Earth Observation (Optical)",
+      "name": "Aleph-1",
+      "company": "Satellogic",
+      "country_of_origin": "Uruguay / Argentina",
+      "approx_satellites": 60,
+      "altitude_km": 475,
+      "inclination_deg": 97.0,
+      "configuration": "Multiple SSO planes",
+      "primary_launcher": "Falcon 9 (Transporter missions)",
+      "primary_purpose": "High-resolution multispectral imagery"
+    },
+    {
+      "classification": "Earth Observation (Optical)",
+      "name": "PlanetScope",
+      "company": "Planet Labs",
+      "country_of_origin": "USA",
+      "approx_satellites": 200,
+      "altitude_km": 475,
+      "inclination_deg": 97.4,
+      "configuration": "Flock / Train formation",
+      "primary_launcher": "Falcon 9 / Electron (Rocket Lab)",
+      "primary_purpose": "Global daily monitoring"
+    },
+    {
+      "classification": "Earth Observation (SAR)",
+      "name": "ICEYE Constellation",
+      "company": "ICEYE",
+      "country_of_origin": "Finland",
+      "approx_satellites": 48,
+      "altitude_km": 570,
+      "inclination_deg": 97.7,
+      "configuration": "Multiple SSO planes",
+      "primary_launcher": "Falcon 9 / Electron",
+      "primary_purpose": "Synthetic Aperture Radar (day/night)"
+    },
+    {
+      "classification": "IoT / 5G",
+      "name": "Sateliot_25",
+      "company": "Sateliot",
+      "country_of_origin": "Spain",
+      "approx_satellites": 25,
+      "altitude_km": 550,
+      "inclination_deg": 97.5,
+      "configuration": "3 initial planes",
+      "primary_launcher": "Falcon 9",
+      "primary_purpose": "Massive 5G standard IoT"
+    },
+    {
+      "classification": "IoT / Data",
+      "name": "Iridium NEXT",
+      "company": "Iridium",
+      "country_of_origin": "USA",
+      "approx_satellites": 75,
+      "altitude_km": 780,
+      "inclination_deg": 86.4,
+      "configuration": "6 planes x 11 sat (+9 spares)",
+      "primary_launcher": "Falcon 9",
+      "primary_purpose": "Global critical voice and data"
+    }
+  ]
+}
