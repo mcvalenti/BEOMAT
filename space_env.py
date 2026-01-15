@@ -40,6 +40,43 @@ class Satellite:
         
         gmat.Initialize()
 
+    def format_astropy_to_gmat(self, astropy_time):
+        """
+        Converts Astropy Time to GMAT UTCGregorian: 'DD Mon YYYY HH:MM:SS.SSS'
+        """
+        # strftime %b gives abbreviated month name (Jan, Feb, etc.)
+        return astropy_time.datetime.strftime('%d %b %Y %H:%M:%S.%f')[:-3]
+    
+    def set_cartesian(self, epoch_astropy, pos, vel):
+        """
+        Configure Cartesian state.
+        :param epoch_str: UTC ISO format 'YYYY-MM-DD HH:MM:SS.SSS'
+        :param pos: List or array [X, Y, Z] in km
+        :param vel: List or array [VX, VY, VZ] in km/s
+        """
+        # Format the date correctly for GMAT
+        gmat_epoch = self.format_astropy_to_gmat(epoch_astropy)
+
+        # Set the Coordinate System to Earth Fixed or Inertial (J2000)
+        self.gmat_obj.SetField("CoordinateSystem", "EarthMJ2000Eq")
+        self.gmat_obj.SetField("DisplayStateType", "Cartesian")
+        
+        # Set the Epoch (GMAT uses UTCGregorian by default)
+        self.gmat_obj.SetField("DateFormat", "UTCGregorian")
+        self.gmat_obj.SetField("Epoch", gmat_epoch)
+        
+        # Set Position
+        self.gmat_obj.SetField("X", float(pos[0]))
+        self.gmat_obj.SetField("Y", float(pos[1]))
+        self.gmat_obj.SetField("Z", float(pos[2]))
+        
+        # Set Velocity
+        self.gmat_obj.SetField("VX", float(vel[0]))
+        self.gmat_obj.SetField("VY", float(vel[1]))
+        self.gmat_obj.SetField("VZ", float(vel[2]))
+        
+        gmat.Initialize()
+
 class Propagator:
     def __init__(self, name="MainProp", config=None):
         gmat = get_gmat()
@@ -199,27 +236,44 @@ class TLEHandler:
         instance.satrec = sat
         return instance
 
+    # def get_state_at(self, epoch_str=None):
+    #     """
+    #     Calculates the Cartesian state vector (position and velocity) in TEME frame.
+    #     :param epoch_str: ISO format string 'YYYY-MM-DD HH:MM:SS'. Defaults to 'now'.
+    #     :return: Dictionary containing Astropy Time, position (km), and velocity (km/s).
+    #     """
+    #     # Handle time using Astropy for high precision and scale management
+    #     t = Time(epoch_str) if epoch_str else Time.now()
+        
+    #     # SGP4 propagation requires Julian Date (jd1) and fraction (jd2)
+    #     jd, fr = jday(t.jd1, t.jd2)
+    #     error, r, v = self.satrec.sgp4(jd, fr)
+        
+    #     if error != 0:
+    #         # Common errors: 1 (mean motion < 0), 6 (orbit decayed)
+    #         raise RuntimeError(f"SGP4 Propagation Error: Code {error}")
+            
+    #     return {
+    #         'epoch': t,
+    #         'pos': np.array(r), # Cartesian Position [x, y, z] in km
+    #         'vel': np.array(v)  # Cartesian Velocity [vx, vy, vz] in km/s
+    #     }
+    
     def get_state_at(self, epoch_str=None):
-        """
-        Calculates the Cartesian state vector (position and velocity) in TEME frame.
-        :param epoch_str: ISO format string 'YYYY-MM-DD HH:MM:SS'. Defaults to 'now'.
-        :return: Dictionary containing Astropy Time, position (km), and velocity (km/s).
-        """
-        # Handle time using Astropy for high precision and scale management
+        # 1. Handle time
         t = Time(epoch_str) if epoch_str else Time.now()
         
-        # SGP4 propagation requires Julian Date (jd1) and fraction (jd2)
-        jd, fr = jday(t.jd1, t.jd2)
-        error, r, v = self.satrec.sgp4(jd, fr)
+        # Use the Astropy Julian Date parts directly in the satrec.sgp4 method.
+        # jd1 is the day, jd2 is the fraction of the day.
+        error, r, v = self.satrec.sgp4(t.jd1, t.jd2)
         
         if error != 0:
-            # Common errors: 1 (mean motion < 0), 6 (orbit decayed)
             raise RuntimeError(f"SGP4 Propagation Error: Code {error}")
             
         return {
             'epoch': t,
-            'pos': np.array(r), # Cartesian Position [x, y, z] in km
-            'vel': np.array(v)  # Cartesian Velocity [vx, vy, vz] in km/s
+            'pos': np.array(r), 
+            'vel': np.array(v)
         }
 
     def to_geodetic(self, epoch_str=None):
