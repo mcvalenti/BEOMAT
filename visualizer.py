@@ -109,3 +109,98 @@ def plot_ground_track(trayectoria, epoch="2000-01-01T12:00:00"):
 # Llamada final:
 # figura = plot_ground_track(trayectoria)
 # figura.show()
+
+
+"""
+ Access PLOT
+"""
+def plot_ground_track_with_access(trajectory, epoch, sites_data=None):
+    """
+    Plots the satellite ground track and adds markers for Sites.
+    Circle size represents cumulative pass duration.
+    
+    :param trajectory: numpy array [time, x, y, z]
+    :param epoch: Astropy Time or ISO string
+    :param sites_data: List of dicts [{'site': site_obj, 'passes': [pass_list]}]
+    """
+    # 1. Trajectory Processing (Your existing logic)
+    t_ref = Time(epoch)
+    tiempos = t_ref + trajectory[:, 0] * u.second
+    cartesianas = CartesianRepresentation(trajectory[:, 1:4].T * u.km)
+    gcrs_coords = GCRS(cartesianas, obstime=tiempos)
+    itrs_coords = gcrs_coords.transform_to(ITRS(obstime=tiempos))
+    
+    location = EarthLocation.from_geocentric(itrs_coords.x, itrs_coords.y, itrs_coords.z)
+    lats = location.lat.value
+    lons = location.lon.value
+
+    fig = go.Figure()
+
+    # Add Satellite Path
+    fig.add_trace(go.Scattergeo(
+        lat=lats, lon=lons,
+        mode='lines',
+        line=dict(width=1.5, color='red'),
+        name='Satellite Path'
+    ))
+
+    # 2. Add Sites with variable bubble size
+    if sites_data:
+        site_lats = []
+        site_lons = []
+        site_names = []
+        bubble_sizes = []
+        hover_texts = []
+
+        for item in sites_data:
+            site = item['site']
+            passes = item['passes']
+            
+            # Calculate total duration for this site
+            total_duration = sum(p.duration_sec for p in passes)
+            
+            site_lats.append(site.lat)
+            site_lons.append(site.lon)
+            site_names.append(site.name)
+            
+            # Scaling logic: Adjust the factor (e.g., 0.1) so the circles 
+            # aren't too big or too small on the map.
+            bubble_sizes.append(total_duration * 0.05 + 10) 
+            
+            hover_texts.append(
+                f"Site: {site.name}<br>"
+                f"Total Passes: {len(passes)}<br>"
+                f"Total Time: {total_duration:.1f}s"
+            )
+
+        fig.add_trace(go.Scattergeo(
+            lat=site_lats,
+            lon=site_lons,
+            text=hover_texts,
+            name='Ground Sites',
+            mode='markers',
+            marker=dict(
+                size=bubble_sizes,
+                color='blue',
+                opacity=0.7,
+                line=dict(width=1, color='white')
+            )
+        ))
+
+    fig.update_layout(
+        title="Satellite Ground Track & Site Access Duration",
+        geo=dict(
+            projection_type='equirectangular',
+            showland=True, landcolor="rgb(240, 240, 240)",
+            showcountries=True,
+            lonaxis=dict(range=[-180, 180]),
+            lataxis=dict(range=[-90, 90])
+        ),
+        margin={"r":0,"t":50,"l":0,"b":0}
+    )
+    
+    return fig
+
+    # visual_data = [{'site': station_cordoba, 'passes': passes_cordoba}]
+    # fig = plot_ground_track_with_access(trajectory_data, start_epoch, visual_data)
+    # fig.show()
