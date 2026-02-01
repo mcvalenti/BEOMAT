@@ -179,6 +179,8 @@ class TLEHandler:
         :param line1: First line of the TLE.
         :param line2: Second line of the TLE.
         """
+        self.mu = 398600.5 
+        self.Re = 6378.135
         self.name = name
         self.line1 = line1
         self.line2 = line2
@@ -235,29 +237,6 @@ class TLEHandler:
         
         instance.satrec = sat
         return instance
-
-    # def get_state_at(self, epoch_str=None):
-    #     """
-    #     Calculates the Cartesian state vector (position and velocity) in TEME frame.
-    #     :param epoch_str: ISO format string 'YYYY-MM-DD HH:MM:SS'. Defaults to 'now'.
-    #     :return: Dictionary containing Astropy Time, position (km), and velocity (km/s).
-    #     """
-    #     # Handle time using Astropy for high precision and scale management
-    #     t = Time(epoch_str) if epoch_str else Time.now()
-        
-    #     # SGP4 propagation requires Julian Date (jd1) and fraction (jd2)
-    #     jd, fr = jday(t.jd1, t.jd2)
-    #     error, r, v = self.satrec.sgp4(jd, fr)
-        
-    #     if error != 0:
-    #         # Common errors: 1 (mean motion < 0), 6 (orbit decayed)
-    #         raise RuntimeError(f"SGP4 Propagation Error: Code {error}")
-            
-    #     return {
-    #         'epoch': t,
-    #         'pos': np.array(r), # Cartesian Position [x, y, z] in km
-    #         'vel': np.array(v)  # Cartesian Velocity [vx, vy, vz] in km/s
-    #     }
     
     def get_state_at(self, epoch_str=None):
         # 1. Handle time
@@ -274,6 +253,30 @@ class TLEHandler:
             'epoch': t,
             'pos': np.array(r), 
             'vel': np.array(v)
+        }
+    
+    def get_orbit_elements(self):
+        """
+        Extracts orbital elements for SGP4 and SMAD.
+        """
+        # Mean Motion (revs/day)
+        n_rev_day = float(self.line2[52:63])
+        n_rad_min = (n_rev_day * 2 * np.pi) / 1440.0 # Standard for SGP4 init
+        
+        # Semi-major axis (a) for SMAD [km]
+        n_rad_sec = (n_rev_day * 2 * np.pi) / 86400.0
+        a = (self.mu / (n_rad_sec**2))**(1/3)
+        
+        return {
+            'a': a,
+            'h': a - self.Re,
+            'e': float("0." + self.line2[26:33]),
+            'inc': np.radians(float(self.line2[8:16])),
+            'raan': np.radians(float(self.line2[17:25])),
+            'argp': np.radians(float(self.line2[34:42])),
+            'm': np.radians(float(self.line2[43:51])),
+            'bstar': float(self.line1[53:59]) * 1e-5, # Simplified
+            'n_rad_min': n_rad_min
         }
 
     def to_geodetic(self, epoch_str=None):
