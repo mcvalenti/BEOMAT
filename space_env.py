@@ -179,8 +179,8 @@ class TLEHandler:
         :param line1: First line of the TLE.
         :param line2: Second line of the TLE.
         """
-        self.mu = 398600.5 
-        self.Re = 6378.135
+        self.mu = 398600.5 # [km2/s]
+        self.Re = 6378.135 # [km]
         self.name = name
         self.line1 = line1
         self.line2 = line2
