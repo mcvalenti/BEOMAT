@@ -3,7 +3,7 @@
 Created on Feb 01, 2026
 
 Module to analyze simulations results 
-or compute mathematical expressions for analitical estimations
+or compute mathematical expressions for raw analitical estimations
 
 @author: mcvalenti
 '''
@@ -13,8 +13,7 @@ import pandas as pd
 
 def get_density(altitude):
     """
-    Compute atmospheric density from table
-    and a logarithmic interpolation
+    Compute atmospheric density from table and a logarithmic interpolation
 
     Args:
         altitude (float): Satellite altitude in km.
@@ -86,7 +85,6 @@ def drag_decay_per_rev(atmparams=None):
     delta_a_rev = -2 * np.pi * (cd * area_km2 / mass) * (a**2) * rho_km3
     
     return delta_a_rev
-
 
 def estimate_lifetime(params):
     """
