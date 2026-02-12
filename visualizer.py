@@ -94,7 +94,7 @@ def plot_ground_track(trayectoria, epoch="2000-01-01T12:00:00"):
     ))
 
     fig.update_layout(
-        title="Visualización Satelital Interactiva",
+        title="Satellite position (Interactive)",
         geo=dict(
             projection_type='orthographic', # Esto crea el globo 3D
             showland=True, landcolor="DarkGreen",
