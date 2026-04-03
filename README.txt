@@ -37,3 +37,70 @@ Ese error es un clásico de Windows. Por seguridad, PowerShell viene configurado
 la ejecución de scripts (como el archivo Activate.ps1 de tu entorno virtual).
 
 Para solucionarlo y poder "entrar" a tu entorno virtual, tienes que cambiar la Política de Ejecución.
+
+🚀 General Use
+Follow these steps to set up and run your mission analysis in BEOMAT:
+- Define the ORBIT 🛰️
+- - Set up the initial state vectors or Keplerian elements.
+- - Select the appropriate Reference Frame (ECI, ITRF, etc.).
+- Configure the FORCE MODELS 🌍
+- - Select Earth's gravity field (J2, complex geopotential models).
+- - Enable atmospheric drag, solar radiation pressure, and third-body perturbations (Sun/Moon).
+- Set the SIMULATION SCENARIO ⏱️
+- - Define start and stop times (Epoch).
+- - Configure the numerical integrator and step size for propagation.
+- Make an Analysis (Optional) 📊
+- - Custom modules for specific mission requirements:
+- - - Coverage & Revisit: Calculate ground track access and gaps. (On construction)
+- - - End of Life (EoL): Estimate orbital decay and re-entry timelines. (For LEO)
+- - - Orbit Maintenance: Station-keeping maneuvers and fuel budget. (Not yet)
+- - - Launch Windows: Identify optimal departure dates and $\Delta V$. (Not yet)
+- - - Propulsion Requirements: Sizing for chemical or electric thrusters. (Not yet)
+- VISUALIZATION 🎨
+- - Generate 2D ground tracks and 3D orbital plots.
+- - Export data for comparison and evaluation.
+
+=========
+MODULES 
+=========
+
+**access_manager.py**
+Calculates visibility between a pre-computed trajectory and a Ground Site.
+From a precomputed trajectory (GMAT), uses astropy library to compute Az and El (and formate timestamp),
+and check for the visibility from a particular site on earth.  Returns a List of Pass objects (from ground_segment)
+- class AccessManager
+
+**analitics.py**
+(Do not use GMAT environment)
+Module to analyze simulations results or compute mathematical expressions for raw analitical estimations.
+Analitics allows to compute general metrics without making precise propagations. Particularly useful for 
+LEO orbits, to compute decay because of atmospheric drag. 
+- get_density - drag_decay_per_rev - estimate_lifetime
+
+**constants.py**
+List astrodynamics more used constants values
+
+**constellation_env.py**
+TODO: TO describe in more details foward. 
+
+**envConfiguration.py**
+Prints python and GMAT environment configuration
+
+**gmat_env.py**
+Fundamentals to instatiate GMAT environment 
+gmatpy executable PATH must be set here
+
+**ground_segment.py**
+Contains all objects regarding Ground Station, as: Site, station, ROI, pass
+
+**satCatalog.py**
+Manage request to CELESTRACK. 
+
+**space_env.py**
+Fundamental for the creation of spacecraft object, throughout GMAT environment (spacecraft)
+or as TLE (spg4). It also contains the Propagator object (GMAT)
+
+**visualizer.py**
+Contains functions to plot trajectories 3D and 2D (ground track)
+
+

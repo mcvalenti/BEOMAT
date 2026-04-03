@@ -1,3 +1,12 @@
+'''
+Created on Jan 17, 2026
+
+
+@author: mcvalenti
+'''
+
+
+
 import numpy as np
 from astropy.time import Time, TimeDelta
 from astropy.coordinates import CartesianRepresentation, GCRS, ITRS, AltAz
@@ -12,9 +21,9 @@ class AccessManager:
     @staticmethod
     def calculate_access(trajectory_data, start_epoch_astropy, site):
         """
-        :param trajectory_data: numpy array [time_offset, x, y, z] from GMAT
-        :param start_epoch_astropy: The Astropy Time of the first point (t=0)
-        :param site: A Station or ROI object
+        :trajectory_data: numpy array [time_offset, x, y, z] from GMAT
+        :start_epoch_astropy: The Astropy Time of the first point (t=0)
+        :site: A Station or ROI object
         :return: List of Pass objects
         """
         passes = []

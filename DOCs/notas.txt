@@ -1,4 +1,3 @@
-
 Archivo sist_deCoordenadas.py 
 
 Observaciones para optimizar la integración en BEOMAT:
