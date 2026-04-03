@@ -1,0 +1,11 @@
+
+Archivo sist_deCoordenadas.py 
+
+Observaciones para optimizar la integración en BEOMAT:
+Vectorización: Actualmente, funciones como xv2eo usan np.dot(r, r). 
+Esto funciona perfecto para un vector a la vez. Si en el futuro notas que el post-procesamiento es lento, podrías cambiarlas a:
+
+rmod = np.linalg.norm(r, axis=1) (para procesar todo el array de una vez sin el bucle for).
+
+Dependencia de Archivos: La función teme2tod intenta abrir ../SistReferencia/prenut.dat. 
+Asegúrate de que en tu entorno de producción de BEOMAT esa ruta sea correcta o integra los coeficientes directamente en el código para que sea más portátil.
