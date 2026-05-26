@@ -1,0 +1,14 @@
+{
+  "satellites": [
+    {
+      "norad_id": 41556,
+      "name": "NUSAT 1",
+      "altitude":450,
+      "eccentricity": 0.000123,
+      "inclination": 97.5,
+      "epoch": "2026-05-20T12:00:00Z",
+      "mass":200,
+      "Area":12.5
+    }
+  ]
+}

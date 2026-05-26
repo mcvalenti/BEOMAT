@@ -38,27 +38,29 @@ la ejecución de scripts (como el archivo Activate.ps1 de tu entorno virtual).
 
 Para solucionarlo y poder "entrar" a tu entorno virtual, tienes que cambiar la Política de Ejecución.
 
-🚀 General Use
-Follow these steps to set up and run your mission analysis in BEOMAT:
-- Define the ORBIT 🛰️
-- - Set up the initial state vectors or Keplerian elements.
-- - Select the appropriate Reference Frame (ECI, ITRF, etc.).
-- Configure the FORCE MODELS 🌍
-- - Select Earth's gravity field (J2, complex geopotential models).
-- - Enable atmospheric drag, solar radiation pressure, and third-body perturbations (Sun/Moon).
-- Set the SIMULATION SCENARIO ⏱️
-- - Define start and stop times (Epoch).
-- - Configure the numerical integrator and step size for propagation.
-- Make an Analysis (Optional) 📊
-- - Custom modules for specific mission requirements:
-- - - Coverage & Revisit: Calculate ground track access and gaps. (On construction)
-- - - End of Life (EoL): Estimate orbital decay and re-entry timelines. (For LEO)
-- - - Orbit Maintenance: Station-keeping maneuvers and fuel budget. (Not yet)
-- - - Launch Windows: Identify optimal departure dates and $\Delta V$. (Not yet)
-- - - Propulsion Requirements: Sizing for chemical or electric thrusters. (Not yet)
-- VISUALIZATION 🎨
-- - Generate 2D ground tracks and 3D orbital plots.
-- - Export data for comparison and evaluation.
+## 🚀 General Use
+
+* **Define the ORBIT** 🛰️
+    * Set up the initial state vectors or Keplerian elements.
+    * Select the appropriate Reference Frame (ECI, ITRF, etc.).
+
+* **Configure the FORCE MODELS** 🌍
+    * Select Earth's gravity field (J2, complex geopotential models).
+    * Enable atmospheric drag, solar radiation pressure, and third-body perturbations.
+
+* **Set the SIMULATION SCENARIO** ⏱️
+    * Define start and stop times (Epoch).
+    * Configure the numerical integrator and step size for propagation.
+
+* **Make an Analysis (optional):** 📊
+    * **Coverage/Revisit:** Calculate ground track access and gaps.
+    * **End of Life:** Estimate orbital decay and re-entry timelines.
+    * **Orbit Maintenance:** Station-keeping maneuvers and fuel budget.
+    * **Launch Windows:** Identify optimal departure dates and $\Delta V$.
+    * **Propulsion Requirements:** Sizing for chemical or electric thrusters.
+
+* **VISUALIZATION** 🎨
+    * Generate 2D ground tracks and 3D orbital plots.
 
 =========
 MODULES 
@@ -104,3 +106,26 @@ or as TLE (spg4). It also contains the Propagator object (GMAT)
 Contains functions to plot trajectories 3D and 2D (ground track)
 
 
+=========
+EXAMPLES
+=========
+
+** Example_access **
+Module to compute access to Ground Stations
+! note: Requires conextion to downlaod Leap_Second.dat from IERS.
+
+** Example_Analysis**
+Raw analysis computation from math expression (Not use of GMAT)
+Compute:
+ - Drag decay in every revolution 
+ - Satellite EndOfLife because of Drag
+ - (Not implemented) J2 Nodal Precession effect on Repeating Ground Track 
+! note: Simplified Atmospheric model - Compute atmospheric density from table and a logarithmic interpolation
+
+Inputs:
+sat_properties = {
+    'cd': 2.2,      # Standard drag coefficient
+    'area': 12.5,   # m^2 (Effective cross-section)
+    'mass': 450.0,  # kg
+    'h': 450.0      # km
+}

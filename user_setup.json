@@ -1,0 +1,14 @@
+{
+  "satellites": [
+    {
+      "norad_id": 99999,
+      "name": "SATELITE USUARIO 1",
+      "altitude":450,
+      "eccentricity": 0.0015,
+      "inclination": 45.0,
+      "epoch": "2026-05-25T15:30:00Z",
+      "mass":200,
+      "Area":12.5
+    }
+  ]
+}

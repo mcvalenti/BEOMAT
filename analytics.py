@@ -10,6 +10,7 @@ or compute mathematical expressions for raw analitical estimations
 
 import numpy as np
 import pandas as pd
+import constants as cts
 
 def get_density(altitude):
     """
@@ -108,10 +109,9 @@ def estimate_lifetime(params):
     lifetime_revs = -scale_height / delta_a_rev
     
     # Convert revs to days: L_days = L_revs * (Period / 86400)
-    mu = 398600.4415
-    period_sec = 2 * np.pi * np.sqrt(params['a']**3 / mu)
+    period_sec = 2 * np.pi * np.sqrt(params['a']**3 / cts.mu_e)
     
-    return (lifetime_revs * period_sec) / 86400
+    return (lifetime_revs * period_sec) / cts.secinday
 
 
 
