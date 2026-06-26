@@ -19,6 +19,7 @@ import matplotlib.pyplot as plt
 from analytics import *
 from space_env import Satellite, Propagator
 from config import load_beomat_configuration
+from visualizer import graficar_2d_plotly
 
 
 # #### Auxiliary Functions
@@ -46,27 +47,51 @@ def J2_RAAN_drift(a,e,i):
 # ==========================================================================
 #  Scenario
 # ==========================================================================
-all_satellites = load_beomat_configuration()
-print(all_satellites)
 
-SEGUIR ACA !!
-#  Satellite Physical Properties (Manual or from Database) (or user Input)
-sat_properties = {
-    'cd': 2.2,      # Standard drag coefficient
-    'area': 12.5,   # m^2 (Effective cross-section)
-    'mass': 450.0,   # kg
-    'h': 450.0      # km
-}
+""" inputs """
+sat_name = "SAOCOM 1-A"
+#sat_noradId = 43641
+
+all_satellites = load_beomat_configuration()
+if sat_name: 
+    search_value = sat_name
+elif sat_noradId:
+    search_value = sat_noradId  
+
+# Satellite Dictionary
+selected_sat = next(
+    (sat for sat in all_satellites 
+     if str(sat.get('norad_id')) == str(search_value) 
+     or sat.get('name', '').lower() == str(search_value).lower()), 
+    None
+)
+
+if selected_sat:
+    print(f"Satellite LOADED: {selected_sat['name']}")
+else:
+    print(f"Satellite NOT FOUND")
+
+# Instanciamos el satelite (esto crea el objeto Spacecraft en GMAT)
+sat = Satellite(selected_sat['name'])
+
+sat.set_keplerian(
+    sma=selected_sat['altitude'] + cts.Re, 
+    ecc=selected_sat['eccentricity'], 
+    inc=selected_sat['inclination'], 
+    raan=0, 
+    aop=0, 
+    ta=0
+)
 
 atmparams = {
-    'cd': sat_properties['cd'],
-    'area': sat_properties['area'],
-    'mass': sat_properties['mass'],
-    'h': sat_properties['h'],
-    'a': cts.Re + sat_properties['h']
+    'cd': 2.2,
+    'area':  selected_sat['Area'],
+    'mass': selected_sat['mass'],
+    'h': selected_sat['altitude'],
+    'a': cts.Re + selected_sat['altitude']
 }
 
-#  Decay and Lifetime computation
+#  Analytic DECAY and LIFETIME computation
 
 da_rev =drag_decay_per_rev(atmparams)
 life_time = estimate_lifetime(atmparams)
@@ -78,16 +103,6 @@ print(f'Life Time: {np.round(life_time,4)} days' )
 # ==========================================================================
 # Once we know the life time in days, we can propagate in GMAT to show decay. 
 
-sat = Satellite("Freefall")
-sat.set_keplerian(
-    sma=cts.Re + sat_properties['h'], 
-    ecc=0.0001, 
-    inc=98.2, 
-    raan=0, 
-    aop=0, 
-    ta=0
-)
-print(f"Satelite '{sat.name}' configurado.")
 # Force Models
 config_leo = {
     'gravity': 'Earth',
@@ -95,50 +110,31 @@ config_leo = {
     'order': 0,
     'drag': True    # Atmpospheric Drag
 }
-# GMAT Propagator 
+# GMAT Propagator - Propagate 1 Orbit
 prop = Propagator("MyPropagator", config=config_leo)
-# Propagation time
-duration_sim = life_time+2 # [days]
-duration_sim = duration_sim*cts.secinday # [sec]
+duration_sim =  sat.get_keplerian_period()# [sec]
 print("Runnig propagation...")
 # trajectory -> numpy: [tiempo, x, y, z]
 trajectory = prop.run(sat, duration_sec=duration_sim, step_size=600)
-print(f"Finished!")
-# Compute semimajor axis to plot
-time = trajectory[:, 0]
-# r = sqrt(x^2 + y^2 + z^2)
-r = np.linalg.norm(trajectory[:, 1:], axis=1)
-# Matrix(N, 2)
-radius= np.column_stack((time, r))
-print(f'First Orbit radius ri: {radius[0][1]}')
-print(f'Last Orbit radius rf: {radius[0][1]}')
+# Ground Track 2D
+fig_2d = graficar_2d_plotly(trajectory)
+fig_2d.show()
 
+COVERAGE --> SEGUIR ACA
 # ===========================
 #  Repeating Ground Track
 # ===========================
 # Definition from book
-# k_rev = 16 # revolutions
-# P=cts.min_sidereal_day/k_rev # [min]
-# sma = compute_sma(P)
-# hp=120.0 # [km]
-# i=45  # [deg]
-# r_a= 2*compute_sma(P)-(hp+cts.Re)
-# b = np.sqrt(r_a*(hp+cts.Re))
-# e = np.sqrt(1-(b*b/(sma*sma)))
+P = sat.get_keplerian_period()
+k_rev = int(86160/P) # revolutions
+r_a= 2*sat.sma-(selected_sat['altitude']+cts.Re)
+b = np.sqrt(r_a*(selected_sat['altitude']+cts.Re))
+e = selected_sat['eccentricity'] 
 # # RAAN drift
-# Ome_dot = J2_RAAN_drift(sma,e,i)
-
-# # Period computation iteration
-# P_ini = P
-
-# sma = compute_sma(P_ini)
-# r_a= 2*sma-(hp+cts.Re)
-# b = np.sqrt(r_a*(hp+cts.Re))
-# e = np.sqrt(1-(b*b/(sma*sma)))
-# Ome_dot = J2_RAAN_drift(sma,e,i) # [deg/day]
-# Ome_dot_min = Ome_dot/1440 # [deg/min]
+Ome_dot = J2_RAAN_drift(sat.sma,e,selected_sat['inclination']) # [deg/day]
+P_ini = P
 # # cuantos minutos le llevo a Tierra recorrer el Delta de RAAN 
-# Delta_period = Ome_dot_min*P_ini/cts.earth_angular_velocity
+Delta_period = Ome_dot_min*P_ini/cts.earth_angular_velocity
 # P_new = P_ini + Delta_period
 # P_ini = P_new 
 

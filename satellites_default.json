@@ -7,8 +7,22 @@
       "eccentricity": 0.000123,
       "inclination": 97.5,
       "epoch": "2026-05-20T12:00:00Z",
-      "mass":200,
-      "Area":12.5
+      "mass":53,
+      "Area":12.5,
+      "belongConstellation": true,
+      "ConstellationName": "Satellogic"
+    },
+     {
+      "norad_id": 43641,
+      "name": "SAOCOM 1-A",
+      "altitude":450,
+      "eccentricity": 0.000123,
+      "inclination": 97.9,
+      "epoch": "2026-06-26T12:00:00Z",
+      "mass":3000,
+      "Area":35,
+      "belongConstellation": false,
+      "ConstellationName": "Not Applicable"
     }
   ]
 }

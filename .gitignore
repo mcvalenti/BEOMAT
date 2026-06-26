@@ -14,3 +14,6 @@ LoadMission-checkpoint.ipynb
 
 # Archivos de configuración de VSCode (opcional)
 .vscode/
+
+# Others
+user_setup.json

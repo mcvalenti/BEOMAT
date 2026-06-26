@@ -1,8 +1,34 @@
 Integrar GMAT (General Mission Analysis Tool) con Python para trabajar en un entorno como JupyterLab.
 [Ref] ../yourdir/GMAT/docs/GMAT_API_UsersGuide.pdf
 
+ENTORNO VIRTUAL: .venv\Scripts\activate (Desde la carpeta BEOMAT)
+
+General Architecture:
+/BEOMAT
+"Envs"
+    -- gmat_env.py 
+    -- space_env.py 
+    -- constellation_env.py 
+    -- envConfiguration.py 
+"utils"
+    -- constants.py 
+"Entities" 
+    -- ground_segment.py
+    -- satCatalog.py 
+"Process" 
+    -- access_manager.py 
+    -- analytics.py 
+    -- visualizer.py 
+
+Existent Satellies or Missions
+-- satellites_default.json (mini DB) for init visualization
+-- user_setup.json (particular user sat/mission)
+
+
 1. La Interfaz GMAT-Python (API)
-GMAT no es una librería de Python que se instale con pip, sino un software independiente que expone una API de Python. Para usarla en Jupyter:
+GMAT no es una librería de Python que se instale con pip, sino un software independiente que expone una API de Python. 
+
+Para usarla en Jupyter:
 
 Configuración de Rutas: Debes indicarle a Python dónde reside el motor de GMAT dentro de tu computadora.
 
@@ -15,7 +41,7 @@ Integer (Grado, Orden, Iteraciones)	SetInteger(str, int)		SetInteger("Degree", 4
 
 Otras dependencias
 plotly 
-astropy (para la transformacion de ECI a Geodesicas)
+astropy (para la transformacion de Sistemas de Coordenadas y otras funcionalidades)
 -----------------------------------------------------------------------------------------
 Versión de Astropy: 5.2.2
 Versión de Python: 3.8.18 (default, Sep 11 2023, 13:39:12) [MSC v.1916 64 bit (AMD64)]
@@ -38,28 +64,30 @@ la ejecución de scripts (como el archivo Activate.ps1 de tu entorno virtual).
 
 Para solucionarlo y poder "entrar" a tu entorno virtual, tienes que cambiar la Política de Ejecución.
 
+# =========================================================================================================
 ## 🚀 General Use
+# =========================================================================================================
 
 * **Define the ORBIT** 🛰️
     * Set up the initial state vectors or Keplerian elements.
-    * Select the appropriate Reference Frame (ECI, ITRF, etc.).
+    * Select the appropriate Reference Frame (ECI, ITRF, etc.). (TO DO: transparent for user, default or selector)
 
-* **Configure the FORCE MODELS** 🌍
+* **Configure the FORCE MODELS** 🌍 - (TO DO: default configuration, conditional en particular cases LEO vs GEO)
     * Select Earth's gravity field (J2, complex geopotential models).
     * Enable atmospheric drag, solar radiation pressure, and third-body perturbations.
 
 * **Set the SIMULATION SCENARIO** ⏱️
     * Define start and stop times (Epoch).
-    * Configure the numerical integrator and step size for propagation.
+    * Configure the numerical integrator and step size for propagation. (TO DO: default configuration, conditional en particular cases LEO vs GEO)
 
 * **Make an Analysis (optional):** 📊
-    * **Coverage/Revisit:** Calculate ground track access and gaps.
-    * **End of Life:** Estimate orbital decay and re-entry timelines.
-    * **Orbit Maintenance:** Station-keeping maneuvers and fuel budget.
-    * **Launch Windows:** Identify optimal departure dates and $\Delta V$.
-    * **Propulsion Requirements:** Sizing for chemical or electric thrusters.
+    * **Coverage/Revisit:** Calculate ground track access and gaps. (Pending)
+    * **End of Life:** Estimate orbital decay and re-entry timelines. (To test - To incoroporate to de mission summary report)
+    * **Orbit Maintenance:** Station-keeping maneuvers and fuel budget. (Pending)
+    * **Launch Windows:** Identify optimal departure dates and $\Delta V$. (Pending)
+    * **Propulsion Requirements:** Sizing for chemical or electric thrusters. (Pending)
 
-* **VISUALIZATION** 🎨
+* **VISUALIZATION** 🎨 --> Asociated to already existing satellites or constellations --> (TO DO - Existing Feature)
     * Generate 2D ground tracks and 3D orbital plots.
 
 =========
@@ -129,3 +157,17 @@ sat_properties = {
     'mass': 450.0,  # kg
     'h': 450.0      # km
 }
+
+Design approaches:
+
+Rendimiento y Velocidad (Performance)
+GMAT es un motor pesado. Cada llamada a SetField, GetState o cualquier interacción
+con sus objetos cruza la frontera entre Python y C++.
+
+Si dejas que GMAT solo propague en su sistema nativo, el bucle corre a máxima velocidad.
+
+Al exportar la trayectoria como un simple array de NumPy ([Time, X, Y, Z]), el trabajo de GMAT termina ahí.
+
+Astropy procesa ese array de NumPy de forma vectorizada (al estilo de C). 
+Convertir 1,000 puntos de una sola vez con Astropy toma milisegundos en Python, 
+mientras que pedírselo a GMAT punto por punto dentro del bucle frena el rendimiento

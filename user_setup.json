@@ -8,7 +8,9 @@
       "inclination": 45.0,
       "epoch": "2026-05-25T15:30:00Z",
       "mass":200,
-      "Area":12.5
+      "Area":12.5, 
+      "belongConstellation": false,
+      "ConstellationName": "Not applicable"
     }
   ]
 }

@@ -4,6 +4,7 @@ from astropy import units as u
 from astropy.coordinates import TEME, CartesianRepresentation, ITRS
 import numpy as np
 from gmat_env import get_gmat
+import constants as cts
 
 # Get GMAT's motor instance
 gmat = get_gmat()
@@ -28,9 +29,12 @@ class Satellite:
         }
         
         for key, value in elements.items():
+            key_lower = key.lower()
+            float_value = float(value)
             gmat_key = mappings.get(key.lower())
             if gmat_key:
                 # GMAT espera un 'double' de C++, que en Python es float.
+                setattr(self, key_lower, float_value)
                 try:
                     self.gmat_obj.SetReal(gmat_key, float(value))
                 except AttributeError:
@@ -39,6 +43,14 @@ class Satellite:
                     self.gmat_obj.SetField(gmat_key, float(value))
         
         gmat.Initialize()
+
+    def get_keplerian_period(self):
+        """
+        Compute the Keplerian period given the semi-major axis.
+        :param sma: Semi-major axis in km
+        :return: Period in seconds
+        """
+        return 2 * np.pi * np.sqrt(self.sma**3 / cts.mu_e)
 
     def format_astropy_to_gmat(self, astropy_time):
         """
@@ -76,6 +88,27 @@ class Satellite:
         self.gmat_obj.SetField("VZ", float(vel[2]))
         
         gmat.Initialize()
+    
+    def get_subsatellite_points(self, trajectory, start_epoch):
+        """
+        Converts an inertial trajectory array into geodetic coordinates 
+        for this satellite instance.
+        """
+        time_offsets = trajectory[:, 0] * u.second
+        times = start_epoch + time_offsets
+        
+        cartesian_km = CartesianRepresentation(trajectory[:, 1:4].T * u.km)
+        gcrs_coords = GCRS(cartesian_km, obstime=times)
+        itrs_coords = gcrs_coords.transform_to(ITRS(obstime=times))
+        
+        geo_location = EarthLocation.from_geocentric(itrs_coords.x, itrs_coords.y, itrs_coords.z)
+        
+        return {
+            "time": times,
+            "lat": geo_location.lat.deg,
+            "lon": geo_location.lon.deg,
+            "alt_km": geo_location.height.to(u.km).value
+        }
 
 class Propagator:
     def __init__(self, name="MainProp", config=None):
