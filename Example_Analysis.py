@@ -1,6 +1,6 @@
 """
 ## Orbit Maintenance 
-
+TO DO REVIEW DESCRIPTION
 ---------------------------------------------------------
 Atmospheric Drag Perturbation computation
 [Ref] Larson & Werz - Sec. 6.2.3
@@ -21,38 +21,15 @@ from space_env import Satellite, Propagator
 from config import load_beomat_configuration
 from visualizer import graficar_2d_plotly
 
-
-# #### Auxiliary Functions
-
-def compute_sma(P):
-    """
-    Compute semimajor-axis from Period
-    """
-    P_seg = P*60
-    return np.cbrt(P_seg*P_seg*cts.mu_e/(4*np.pi*np.pi))
-
-def J2_RAAN_drift(a,e,i):
-    """
-    J2_RAAN_drift raw estimation of the drift of the Node
-    when considering the J2 perturbation
-    [Ref]  Larson & Wertz - pag 143
-    :param a: semimajor-axis [km]
-    :param e: eccentriticty
-    :param i: inclination [deg]
-    -----------------------------
-    return OMEGA_drift [deg/day]
-    """
-    return -2.06474e14*a**(-7/2)*np.cos(i*cts.deg2rad)*(1-e)**(-2)
-
 # ==========================================================================
-#  Scenario
+#  Scenario - Load from DB or input a new satellite
 # ==========================================================================
 
 """ inputs """
 sat_name = "SAOCOM 1-A"
 #sat_noradId = 43641
 
-all_satellites = load_beomat_configuration()
+all_satellites = load_beomat_configuration() # from config
 if sat_name: 
     search_value = sat_name
 elif sat_noradId:
@@ -71,7 +48,8 @@ if selected_sat:
 else:
     print(f"Satellite NOT FOUND")
 
-# Instanciamos el satelite (esto crea el objeto Spacecraft en GMAT)
+
+# Load a GMAT Satellite from input data
 sat = Satellite(selected_sat['name'])
 
 sat.set_keplerian(
@@ -91,6 +69,7 @@ atmparams = {
     'a': cts.Re + selected_sat['altitude']
 }
 
+""" Theoretical Analysis """
 #  Analytic DECAY and LIFETIME computation
 
 da_rev =drag_decay_per_rev(atmparams)
@@ -98,6 +77,8 @@ life_time = estimate_lifetime(atmparams)
 print(f'Decay in every revolution: {np.round(da_rev,4)} Km' )
 print(f'Life Time: {np.round(life_time,4)} days' )
 
+
+""" Propagation """
 # ==========================================================================
 # Propagation in GMAT
 # ==========================================================================
@@ -111,8 +92,8 @@ config_leo = {
     'drag': True    # Atmpospheric Drag
 }
 # GMAT Propagator - Propagate 1 Orbit
-prop = Propagator("MyPropagator", config=config_leo)
-duration_sim =  sat.get_keplerian_period()# [sec]
+prop = Propagator("PDormand78", config=config_leo)
+duration_sim =  16*sat.get_keplerian_period()# [sec]
 print("Runnig propagation...")
 # trajectory -> numpy: [tiempo, x, y, z]
 trajectory = prop.run(sat, duration_sec=duration_sim, step_size=600)
@@ -120,24 +101,50 @@ trajectory = prop.run(sat, duration_sec=duration_sim, step_size=600)
 fig_2d = graficar_2d_plotly(trajectory)
 fig_2d.show()
 
-COVERAGE --> SEGUIR ACA
-# ===========================
-#  Repeating Ground Track
-# ===========================
-# Definition from book
-P = sat.get_keplerian_period()
-k_rev = int(86160/P) # revolutions
-r_a= 2*sat.sma-(selected_sat['altitude']+cts.Re)
-b = np.sqrt(r_a*(selected_sat['altitude']+cts.Re))
-e = selected_sat['eccentricity'] 
-# # RAAN drift
-Ome_dot = J2_RAAN_drift(sat.sma,e,selected_sat['inclination']) # [deg/day]
-P_ini = P
-# # cuantos minutos le llevo a Tierra recorrer el Delta de RAAN 
-Delta_period = Ome_dot_min*P_ini/cts.earth_angular_velocity
-# P_new = P_ini + Delta_period
-# P_ini = P_new 
 
-# sma1 = compute_sma(P_ini)
-# # New P
-# print (f'New Period: {np.round(P_ini,4)} and New sma: {np.round(sma1,4)}')
+elevation_min = 30 # [deg]
+
+print("---------------------------------------------------------")
+print("Mission Summary Report")
+print("---------------------------------------------------------")
+print("General Information: ")
+print(f"Satellite: {sat.name}")
+print(f"Altitude: {selected_sat['altitude']} [km]")
+print(f"Inclination: {selected_sat['inclination']} [deg]")
+print(f"Elevation Mask: {elevation_min} [deg]")
+Lmax = compute_Lmax(selected_sat['altitude'], elevation_min)
+print(f"Maximum Angle coverage (2Lmax): {np.round(2*Lmax,4)} [deg]")
+
+# Longitude drifting because of Earth rotation and RAAN drift
+P = sat.get_keplerian_period() # [sec]
+DeltaL = (P/60.0)*(cts.earth_angular_velocity)
+DeltaL_j2=J2_RAAN_drift(sat.sma,selected_sat['eccentricity'],selected_sat['inclination'])* P/cts.secinday # [deg/orbit]      
+DeltaL_total = DeltaL - DeltaL_j2 # TODO: Confirm signs
+print(f"Total Longitude drift per orbit: {np.round(DeltaL_total,4)} [deg/orbit]" )
+
+# REVISIT
+review -> continuar
+* Revisar las cuentas de revisita
+* Identificar bien inputs y outputs del reporte
+* Trasladar los inputs y outputs al main -> que tome forma de formulario
+* Analizar incorporar más satélites en fase para la cobertura global
+
+k_day = sat.get_revolutions_per_day()
+print(f"Revolutions per day: {np.round(k_day,4)} [rev/day]")    
+daily_Equator_crossing_ = k_day * (np.radians(Lmax)/(np.pi*np.sin(np.radians(selected_sat['inclination'])))) 
+Revisit_time  = 24/daily_Equator_crossing_ # [hs]
+print(f"Revisit time: {np.round(Revisit_time,4)} [hs]")
+
+
+print("COVERAGE ANALYSIS: ")
+
+if DeltaL_total < 2*Lmax:
+    k_global = np.ceil(360/DeltaL_total)
+    print("Global Coverage is possible in k revolutions: ", k_global)
+else:
+    k_revisit = Revisit_time*60.0 / P
+    print("Revisit time is possible in k revolutions: ", np.round(k_revisit,4))
+    coverage_revisit = k_revisit * (DeltaL_total-2*Lmax)
+    print("Coverage in k revolutions: ", np.round(coverage_revisit,4), " [deg]")
+
+

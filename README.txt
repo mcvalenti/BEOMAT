@@ -140,10 +140,10 @@ EXAMPLES
 
 ** Example_access **
 Module to compute access to Ground Stations
-! note: Requires conextion to downlaod Leap_Second.dat from IERS.
+! note: Requires connection to downlaod Leap_Second.dat from IERS.
 
 ** Example_Analysis**
-Raw analysis computation from math expression (Not use of GMAT)
+Raw analysis computation from math expression followed by the use of GMAT
 Compute:
  - Drag decay in every revolution 
  - Satellite EndOfLife because of Drag

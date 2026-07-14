@@ -18,4 +18,4 @@ mu_e = 398600.4415 # [km3/s2]
 min_sidereal_day= 1436.068167
 # earth_angular_velocity
 earth_angular_velocity = 360/1440 # [deg/min]
-secinday=86400  # seconds in solar day
+secinday=86164  # seconds in solar day

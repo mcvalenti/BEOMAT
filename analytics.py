@@ -113,6 +113,71 @@ def estimate_lifetime(params):
     
     return (lifetime_revs * period_sec) / cts.secinday
 
+# GEOMETRIC COVERAGE
+
+def compute_Lmax(altitude, elevation_min):
+    """ 
+    Spheric Earth Geometry - Maximum Ground Coverage Angle (Lmax) 
+    for a given satellite altitude and minimum elevation angle.
+    ---------------------------------------------------------------------
+    altitude (float): Satellite altitude in [km].
+    elevation_min (float): Minimum elevation angle [deg].  
+    rho: Angular radius of the Earth as seen from the satellite [rad].    
+    eta_max: Nadir angle from the satellite to the target horizon with elevation_min [rad].
+    Returns:
+        Lmax_deg (float): Maximum ground coverage angle in [deg].
+
+    """ 
+    elevation_min_rad = np.radians(elevation_min)
+    rho = np.arcsin(cts.Re / (cts.Re + altitude))
+    eta_max = np.arcsin(np.sin(rho)*np.cos(elevation_min_rad))
+    Lmax_rad = np.pi/2 - eta_max - elevation_min_rad
+    Lmax_deg = np.degrees(Lmax_rad)
+    
+    return Lmax_deg
+
+def compute_Swath(altitude, elevation_min):
+    """
+    Computes the swath width (ground coverage) for a satellite at a given altitude
+    and minimum elevation angle. (Spheric Earth Geometry)
+    ---------------------------------------------------------------------
+    altitude (float): Satellite altitude in [km].
+    elevation_min (float): Minimum elevation angle [deg].
+    
+    Returns:
+        swath_width_km (float): Swath width in [km].
+    """
+    Lmax_deg = compute_Lmax(altitude, elevation_min)
+    
+    # Convert Lmax from degrees to radians for the sine function
+    Lmax_rad = np.radians(Lmax_deg)
+    
+    # Swath width calculation using the formula: Swath = 2 * R * sin(Lmax)
+    swath_width_km = 2 * cts.Re * np.sin(Lmax_rad)
+    
+    return swath_width_km
+
+def compute_sma(P):
+    """
+    Compute semimajor-axis from Period
+    """
+    P_seg = P*60
+    return np.cbrt(P_seg*P_seg*cts.mu_e/(4*np.pi*np.pi))
+
+def J2_RAAN_drift(a,e,i):
+    """
+    J2_RAAN_drift raw estimation of the drift of the Node
+    when considering the J2 perturbation
+    [Ref]  Larson & Wertz - pag 143
+    :param a: semimajor-axis [km]
+    :param e: eccentriticty
+    :param i: inclination [deg]
+    -----------------------------
+    return OMEGA_drift [deg/day]
+    """
+    return -2.06474e14*a**(-7/2)*np.cos(i*cts.deg2rad)*(1-e)**(-2)
+
+
 
 
 

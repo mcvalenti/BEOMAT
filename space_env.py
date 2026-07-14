@@ -51,6 +51,14 @@ class Satellite:
         :return: Period in seconds
         """
         return 2 * np.pi * np.sqrt(self.sma**3 / cts.mu_e)
+    
+    def get_revolutions_per_day(self):
+        """
+        Compute the number of revolutions per day based on the Keplerian period.
+        :return: Number of revolutions per day
+        """
+        period_sec = self.get_keplerian_period()
+        return cts.secinday / period_sec
 
     def format_astropy_to_gmat(self, astropy_time):
         """
